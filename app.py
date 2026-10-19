@@ -16,15 +16,15 @@ import tempfile
 
 import numpy as np
 import streamlit as st
-import tensorflow as tf
 
 import diagrams
 import report
+from evidence import load_evidence_model
 from analyze import TfidfFeaturiser, has_terms
 from depth import advice, judge, study_order
-from loaders import SUPPORTED, load
+from loaders import SUPPORTED, load, unreadable
 from syllabus_topics import content_words, topics_with_units
-from units import applicable, file_units, unit_of_label
+from units import applicable, file_units, unit_of_label, units_from_scores
 
 MODEL_DIR = "results/tfidf"
 DEMO_DIR = "demo_files"
@@ -39,7 +39,7 @@ st.set_page_config(page_title="SyllabiSense", layout="wide")
 
 @st.cache_resource
 def load_model():
-    model = tf.keras.models.load_model("models/evidence_ann.keras")
+    model = load_evidence_model()
     thr = json.load(open(f"{MODEL_DIR}/metrics.json", encoding="utf8"))["threshold"]
     human = f"{MODEL_DIR}/metrics_human.json"
     if os.path.exists(human):        # prefer the threshold tuned on human-checked items
@@ -57,6 +57,30 @@ def demo_files():
     syl = next((f for f in files if "syllabus" in os.path.basename(f).lower()), None)
     mats = [f for f in files if f != syl]
     return (syl, mats) if syl and mats else None
+
+
+
+def build_results(topics, units, pages, prob, funits, thr):
+    """Turn the score matrix into a verdict per topic. Separate from the scoring so that
+    changing a file's unit re-decides everything instantly, with no model calls."""
+    have = sorted({u for u in funits.values() if u})
+    all_placed = not any(u is None for u in funits.values())
+    out = []
+    for n, t in enumerate(topics):
+        row = prob[n]
+        order = np.argsort(-row)
+        tunit = unit_of_label(units[n])
+        above = [i for i in order
+                 if row[i] >= thr and has_terms(t, pages[i][2])
+                 and applicable(tunit, funits.get(pages[i][0]))][:8]
+        evidence = [(pages[i][0], pages[i][1], float(row[i]), pages[i][2]) for i in above]
+        level, reasons, kinds = judge(evidence)
+        if not evidence and tunit is not None and have and tunit not in have and all_placed:
+            level, reasons = "NO MATERIAL PROVIDED", [f"no file for unit {tunit} was uploaded"]
+        out.append({"topic": t, "unit": units[n] or "Course", "order": n, "level": level,
+                    "reasons": reasons, "kinds": kinds, "evidence": evidence,
+                    "closest": (pages[order[0]][0], pages[order[0]][1], float(row[order[0]]))})
+    return out
 
 
 def save_uploads(files):
@@ -79,8 +103,9 @@ with c1:
 with c2:
     mat_files = st.file_uploader(f"2. Your course material ({', '.join(s[1:] for s in SUPPORTED)})",
                                  type=[s[1:] for s in SUPPORTED], accept_multiple_files=True)
-st.caption("Tip: name files with their unit — `Unit-2 notes.pdf`, `U3_slides.pptx` — and each "
-           "unit is judged only against its own material.")
+st.caption("Each unit is judged only against its own material. SyllabiSense works out which "
+           "unit a file belongs to from its name, from a unit stated inside it, or from which "
+           "unit's topics it answers — and you can correct it afterwards.")
 
 use_demo = False
 if demo_files():
@@ -105,6 +130,15 @@ if st.button("Analyse", type="primary", disabled=not (use_demo or (syl_file and 
         pages = [(b["source"], b["location"], b["text"]) for b in blocks]
         paths = {b["source"]: b["path"] for b in blocks}   # for rendering pages for the CNN
         st.write(f"{len(pages)} pages/slides/sections from {len(set(p[0] for p in pages))} file(s)")
+
+        # a scanned file reads as zero pages, which would otherwise look like "not taught"
+        scanned = unreadable(mat_paths)
+        if scanned:
+            st.session_state["scanned"] = [(os.path.basename(p), b, n) for p, b, n in scanned]
+            st.write(f"⚠️ {len(scanned)} file(s) appear to be scanned images and could not be read")
+        else:
+            st.session_state.pop("scanned", None)
+
         funits = file_units(pages)
         have = sorted({u for u in funits.values() if u})
         if have:
@@ -116,24 +150,27 @@ if st.button("Analyse", type="primary", disabled=not (use_demo or (syl_file and 
 
         st.write("Scoring every topic against every page ...")
         bar = st.progress(0.0)
-        results = []
+        prob = np.zeros((len(topics), len(pages)), np.float32)
         for n, t in enumerate(topics):
-            prob = model.predict(feat.topic_page(t, pages), verbose=0).ravel()
-            order = np.argsort(-prob)
-            tunit = unit_of_label(units[n])
-            above = [i for i in order
-                     if prob[i] >= thr and has_terms(t, pages[i][2])
-                     and applicable(tunit, funits.get(pages[i][0]))][:8]
-            evidence = [(pages[i][0], pages[i][1], float(prob[i]), pages[i][2]) for i in above]
-            level, reasons, kinds = judge(evidence)
-            if not evidence and tunit is not None and have and tunit not in have \
-                    and not any(u is None for u in funits.values()):
-                level, reasons = "NO MATERIAL PROVIDED", [f"no file for unit {tunit} was uploaded"]
-            results.append({"topic": t, "unit": units[n] or "Course", "order": n, "level": level,
-                            "reasons": reasons, "kinds": kinds, "evidence": evidence,
-                            "closest": (pages[order[0]][0], pages[order[0]][1],
-                                        float(prob[order[0]]))})
+            prob[n] = model.predict(feat.topic_page(t, pages), verbose=0).ravel()
             bar.progress((n + 1) / len(topics))
+
+        # Files whose name and text say nothing about a unit get placed by what they contain:
+        # the scores above already say which unit's topics each file answers. Only files that
+        # are still unplaced are considered, so a name or a title page always wins.
+        topic_units = [unit_of_label(u) for u in units]
+        page_sources = [pg[0] for pg in pages]
+        unplaced = [s for s in dict.fromkeys(page_sources) if funits.get(s) is None]
+        if unplaced and len({u for u in topic_units if u is not None}) >= 2:
+            guessed = {s: u for s, u in
+                       units_from_scores(prob, topic_units, page_sources).items()
+                       if s in unplaced}
+            if guessed:
+                funits.update(guessed)
+                st.write("placed by content: "
+                         + ", ".join(f"{s} → unit {u}" for s, u in guessed.items()))
+
+        results = build_results(topics, units, pages, prob, funits, thr)
 
         # the CNN runs only on the pages the evidence model already chose, not the whole document
         if diagrams.available():
@@ -147,6 +184,8 @@ if st.button("Analyse", type="primary", disabled=not (use_demo or (syl_file and 
             st.write(f"{len(found)} page(s) checked — {withfig} topic(s) have a diagram")
         status.update(label="Done", state="complete")
     st.session_state["results"] = results
+    st.session_state["state"] = {"topics": topics, "units": units, "pages": pages,
+                                 "prob": prob, "funits": funits, "thr": thr, "paths": paths}
     st.session_state["meta"] = {"syllabus": os.path.basename(syl_path),
                                 "material": [os.path.basename(m) for m in mat_paths]}
 
@@ -160,6 +199,47 @@ if "results" in st.session_state:
     c.metric("⚠️ Barely taught", count(results, "BARELY TAUGHT"))
     d.metric("❌ Not taught", count(results, "NOT TAUGHT"))
     e.metric("➖ No material", count(results, "NO MATERIAL PROVIDED"))
+
+    scanned = st.session_state.get("scanned")
+    if scanned:
+        names = ", ".join(f"{n} ({b} of {t} pages)" for n, b, t in scanned)
+        st.warning(
+            f"**{len(scanned)} file(s) could not be read: {names}.** These look like scanned "
+            f"images or photographs with no text layer. Their pages were not searched, so any "
+            f"topic they cover is reported below as if the material were missing. Re-export them "
+            f"as text-based PDFs, or treat those topics as unchecked rather than untaught.")
+
+    state = st.session_state.get("state")
+    if state and len({u for u in (unit_of_label(u) for u in state["units"]) if u}) >= 2:
+        srcs = list(dict.fromkeys(pg[0] for pg in state["pages"]))
+        unit_nums = sorted({u for u in (unit_of_label(u) for u in state["units"]) if u})
+        with st.expander("Which unit does each file belong to?"):
+            st.caption("Detected from the file name, from a unit stated inside it, or from which "
+                       "unit's topics it answers. Change anything that is wrong — the report "
+                       "updates without re-running the models.")
+            chosen, cols = {}, st.columns(min(3, len(srcs)) or 1)
+            for i, src in enumerate(srcs):
+                cur = state["funits"].get(src)
+                options = ["whole course"] + [f"Unit {u}" for u in unit_nums]
+                idx = options.index(f"Unit {cur}") if cur in unit_nums else 0
+                with cols[i % len(cols)]:
+                    pick = st.selectbox(src, options, index=idx, key=f"unit_{src}")
+                chosen[src] = None if pick == "whole course" else int(pick.split()[-1])
+            if chosen != state["funits"]:
+                if st.button("Apply and re-judge", type="primary"):
+                    state["funits"] = chosen
+                    st.session_state["results"] = build_results(
+                        state["topics"], state["units"], state["pages"],
+                        state["prob"], chosen, state["thr"])
+                    if diagrams.available():
+                        res = st.session_state["results"]
+                        want = {(state["paths"].get(f), loc)
+                                for r in res for f, loc, *_ in r["evidence"]}
+                        found = diagrams.detect(want)
+                        for r in res:
+                            ev = [(state["paths"].get(f), loc) for f, loc, *_ in r["evidence"]]
+                            r["diagram"], r["diagram_pages"] = diagrams.summarise(ev, found)
+                    st.rerun()
 
     meta = st.session_state.get("meta", {})
     d1, d2 = st.columns(2)

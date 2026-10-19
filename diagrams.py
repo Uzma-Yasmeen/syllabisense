@@ -25,7 +25,16 @@ _model, _thr = None, 0.5
 
 
 def available():
-    return os.path.exists(MODEL)
+    """Both the weights and TensorFlow have to be present.
+
+    TensorFlow is an optional dependency now: the evidence model runs in numpy, and this is the
+    only part that still needs a deep learning framework. Where it is absent the application
+    works exactly as before minus the diagram line, rather than failing to start.
+    """
+    if not os.path.exists(MODEL):
+        return False
+    import importlib.util
+    return importlib.util.find_spec("tensorflow") is not None
 
 
 def _load():

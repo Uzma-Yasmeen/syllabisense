@@ -17,9 +17,9 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 RUN = ["app.py", "analyze.py", "demo.py"]
 LIB = ["loaders.py", "syllabus_topics.py", "units.py", "depth.py", "match.py", "diagrams.py",
-       "report.py"]
+       "report.py", "evidence.py"]
 TRAIN = ["build_dataset.py", "features_tfidf.py", "embed_features.py", "train_ann.py",
-         "train_crossencoder.py", "evaluate_gold.py", "evaluate_gold_ce.py", "score_verdicts.py",
+         "train_crossencoder.py", "evaluate_gold.py", "evaluate_gold_ce.py", "score_verdicts.py", "export_ann.py", "tune_depth_rules.py",
          "render_pages.py", "train_cnn.py", "train_cnn_scratch.py", "compare_fusion.py"]
 LABEL = ["review_tool.py", "build_depth_candidates.py", "depth_review.py", "train_depth.py",
          "image_review.py"]
@@ -27,7 +27,7 @@ TOOLS = ["collect_nptel.py", "collect_ocw.py", "extract_text.py", "inventory.py"
          "select_pairs.py", "select_cs.py", "finalize_pairs.py", "write_final.py",
          "spot_check.py", "generic_topics.py", "test_page_types.py", "build_repo.py",
          "make_submission.py", "make_figures.py", "make_proposal.py",
-         "make_code_submission.py", "make_proposal_html.py", "make_space.py"]
+         "make_code_submission.py", "make_proposal_html.py", "make_space.py", "measure_memory.py"]
 RESULTS = ["results_tfidf", "results_embed", "results_tfidf_nosim", "results_embed_nosim",
            "results_depth", "results_crossencoder", "results_cnn", "results_cnn_scratch",
            "results_fusion", "results_verdicts"]
@@ -146,8 +146,15 @@ def main():
     ap.add_argument("--dest", default=os.path.expanduser("~/Documents/GitHub/syllabisense"))
     a = ap.parse_args()
     dest = os.path.abspath(a.dest)
-    if os.path.exists(dest):
-        shutil.rmtree(dest)
+    # Clear the contents but never .git. Wiping the whole folder loses the remote and the
+    # history, and on Windows it fails half way through on git's read-only objects - which
+    # leaves the repository empty and unrecoverable.
+    os.makedirs(dest, exist_ok=True)
+    for name in os.listdir(dest):
+        if name == ".git":
+            continue
+        path = os.path.join(dest, name)
+        shutil.rmtree(path, ignore_errors=True) if os.path.isdir(path) else os.remove(path)
     for sub in ("tools", "results", "docs", "models"):
         os.makedirs(os.path.join(dest, sub), exist_ok=True)
 
@@ -165,7 +172,8 @@ def main():
         copy(f, os.path.join(dest, "tools", f))
 
     # models in one place
-    for src, dst in [("results_tfidf/evidence_ann.keras", "evidence_ann.keras"),
+    for src, dst in [("results_tfidf/evidence_ann.npz", "evidence_ann.npz"),
+                     ("results_tfidf/evidence_ann.keras", "evidence_ann.keras"),
                      ("results_depth/depth_ann.keras", "depth_ann.keras"),
                      ("results_cnn/diagram_cnn.keras", "diagram_cnn.keras"),
                      ("dataset/tfidf_model.joblib", "tfidf_model.joblib"),
@@ -199,7 +207,7 @@ def main():
     copy("dataset/stats.json", os.path.join(dest, "dataset", "stats.json"))
 
     # the copies look for models in models/ and results/, not in the working folder's layout
-    for f in ("app.py", "analyze.py", "build_depth_candidates.py", "diagrams.py"):
+    for f in ("app.py", "analyze.py", "build_depth_candidates.py", "diagrams.py", "evidence.py"):
         p = os.path.join(dest, f)
         if not os.path.exists(p):
             continue
@@ -214,6 +222,8 @@ def main():
         # copy finds no model, diagrams.available() returns False and the diagram line silently
         # disappears from the report.
         s = s.replace('MODEL = "results_cnn/diagram_cnn.keras"', 'MODEL = "models/diagram_cnn.keras"')
+        s = s.replace('EXPORT = "results_tfidf/evidence_ann.npz"', 'EXPORT = "models/evidence_ann.npz"')
+        s = s.replace('KERAS = "results_tfidf/evidence_ann.keras"', 'KERAS = "models/evidence_ann.keras"')
         s = s.replace('METRICS = "results_cnn/metrics.json"', 'METRICS = "results/cnn/metrics.json"')
         open(p, "w", encoding="utf8").write(s)
 

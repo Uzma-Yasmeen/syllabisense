@@ -120,6 +120,32 @@ READERS = {".pdf": read_pdf, ".pptx": read_pptx, ".ppt": read_pptx,
 SUPPORTED = sorted(READERS)
 
 
+def unreadable(paths, frac=0.6):
+    """PDFs that are mostly scanned images rather than text.
+
+    load() quietly drops pages with no text layer, which is the right thing to do for the odd
+    cover page but the wrong thing to do silently for a whole file: every topic in it would be
+    reported as not taught, when really nothing could be read. Returns
+    [(path, pages_without_text, total_pages), ...] so the caller can say so.
+    """
+    import pypdfium2 as pdfium
+    out = []
+    for p in paths:
+        if not p.lower().endswith(".pdf"):
+            continue
+        try:
+            doc = pdfium.PdfDocument(p)
+        except Exception:
+            continue
+        n = len(doc)
+        blank = sum(1 for i in range(n)
+                    if len(doc[i].get_textpage().get_text_range().strip()) < MIN_CHARS)
+        doc.close()
+        if n and blank / n >= frac:
+            out.append((p, blank, n))
+    return out
+
+
 def load(paths):
     """paths: files and/or folders -> list of blocks with source/location/heading/text."""
     files = []

@@ -20,9 +20,9 @@ import sys
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-APP = ["app.py", "analyze.py", "diagrams.py", "report.py", "depth.py", "loaders.py",
-       "syllabus_topics.py", "units.py", "match.py"]
-MODELS = [("results_tfidf/evidence_ann.keras", "results_tfidf/evidence_ann.keras"),
+APP = ["app.py", "analyze.py", "diagrams.py", "evidence.py", "report.py", "depth.py",
+       "loaders.py", "syllabus_topics.py", "units.py", "match.py"]
+MODELS = [("results_tfidf/evidence_ann.npz", "results_tfidf/evidence_ann.npz"),
           ("results_tfidf/metrics.json", "results_tfidf/metrics.json"),
           ("results_tfidf/metrics_human.json", "results_tfidf/metrics_human.json"),
           ("results_cnn/diagram_cnn.keras", "results_cnn/diagram_cnn.keras"),
@@ -30,7 +30,6 @@ MODELS = [("results_tfidf/evidence_ann.keras", "results_tfidf/evidence_ann.keras
           ("dataset/tfidf_model.joblib", "dataset/tfidf_model.joblib")]
 
 REQUIREMENTS = """streamlit==1.32.0
-tensorflow-cpu==2.15.0
 scikit-learn==1.5.2
 numpy==1.26.4
 joblib==1.4.2
@@ -40,6 +39,11 @@ pypdfium2==4.30.0
 Pillow==10.4.0
 python-pptx==1.0.2
 python-docx==1.1.2
+
+# TensorFlow is optional: the evidence ANN runs in numpy (see evidence.py) and only the
+# diagram CNN needs a framework. Without it the app runs and simply omits the diagram line.
+# Uncomment on a host with the memory and a matching Python version:
+# tensorflow-cpu==2.15.0
 """
 
 README = """---
@@ -98,9 +102,14 @@ def main():
     ap.add_argument("--dest", default=os.path.expanduser("~/Documents/GitHub/syllabisense-space"))
     a = ap.parse_args()
     dest = os.path.abspath(a.dest)
-    if os.path.exists(dest):
-        shutil.rmtree(dest)
-    os.makedirs(dest)
+    # clear the contents but keep .git: once the Space has been pushed, the folder is a
+    # repository and wiping it would throw away the remote and the history
+    os.makedirs(dest, exist_ok=True)
+    for name in os.listdir(dest):
+        if name == ".git":
+            continue
+        path = os.path.join(dest, name)
+        shutil.rmtree(path, ignore_errors=True) if os.path.isdir(path) else os.remove(path)
 
     missing = []
     for f in APP:

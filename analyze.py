@@ -16,7 +16,6 @@ import re
 import sys
 
 import numpy as np
-import tensorflow as tf
 
 from depth import advice, judge, study_order
 from loaders import SUPPORTED, load
@@ -135,7 +134,8 @@ def main():
     human = a.metrics.replace("metrics.json", "metrics_human.json")
     if os.path.exists(human):          # prefer the threshold tuned on human-checked items
         thr = json.load(open(human, encoding="utf8"))["threshold_human_tuned"]
-    model = tf.keras.models.load_model(a.model)
+    from evidence import load_evidence_model
+    model = load_evidence_model(keras=a.model)
 
     tu = [(u, t) for u, t in topics_with_units(a.syllabus) if content_words(t)]
     topics = [t for _, t in tu]
