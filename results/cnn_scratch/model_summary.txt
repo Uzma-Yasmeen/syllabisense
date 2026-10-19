@@ -1,0 +1,34 @@
+Model: "sequential"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ random_translation (Random  (None, 128, 128, 1)       0         
+ Translation)                                                    
+                                                                 
+ random_zoom (RandomZoom)    (None, 128, 128, 1)       0         
+                                                                 
+ conv_1 (Conv2D)             (None, 126, 126, 32)      320       
+                                                                 
+ pool_1 (MaxPooling2D)       (None, 63, 63, 32)        0         
+                                                                 
+ conv_2 (Conv2D)             (None, 61, 61, 64)        18496     
+                                                                 
+ pool_2 (MaxPooling2D)       (None, 30, 30, 64)        0         
+                                                                 
+ conv_3 (Conv2D)             (None, 28, 28, 128)       73856     
+                                                                 
+ pool_3 (MaxPooling2D)       (None, 14, 14, 128)       0         
+                                                                 
+ flatten (Flatten)           (None, 25088)             0         
+                                                                 
+ dense_1 (Dense)             (None, 128)               3211392   
+                                                                 
+ dropout (Dropout)           (None, 128)               0         
+                                                                 
+ output (Dense)              (None, 1)                 129       
+                                                                 
+=================================================================
+Total params: 3304193 (12.60 MB)
+Trainable params: 3304193 (12.60 MB)
+Non-trainable params: 0 (0.00 Byte)
+_________________________________________________________________

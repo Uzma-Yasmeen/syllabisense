@@ -1,0 +1,40 @@
+{
+ "examples": 17887,
+ "by_split_kind": {
+  "test/easy_negative": 1781,
+  "test/hard_negative": 1858,
+  "test/positive": 1858,
+  "train/easy_negative": 3803,
+  "train/hard_negative": 3894,
+  "train/positive": 3918,
+  "val/easy_negative": 253,
+  "val/hard_negative": 261,
+  "val/positive": 261
+ },
+ "domains": {
+  "Aero": 1823,
+  "Biology": 267,
+  "ChemEng": 553,
+  "Chemistry": 604,
+  "Civil": 466,
+  "CS": 5497,
+  "Electrical": 2724,
+  "Humanities": 171,
+  "Psychology": 357,
+  "Economics": 797,
+  "Sociology": 245,
+  "Management": 4038,
+  "Mathematics": 229,
+  "Mechanical": 68,
+  "Physics": 48
+ },
+ "test_domains": [
+  "CS"
+ ],
+ "val_domains": [
+  "Chemistry",
+  "Humanities"
+ ],
+ "review_sample": 300,
+ "page_chars": 1500
+}

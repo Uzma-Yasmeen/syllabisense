@@ -1,0 +1,22 @@
+{
+ "tuned": {
+  "not_conf": 0.8,
+  "not_pages": 1,
+  "proper_pages_support": 4,
+  "proper_pages_strong": 4,
+  "strong_conf": 0.99
+ },
+ "previous": {
+  "not_conf": 0.0,
+  "not_pages": 0,
+  "proper_pages_support": 2,
+  "proper_pages_strong": 3,
+  "strong_conf": 0.9
+ },
+ "held_out_topics": 83,
+ "accuracy_before": 0.6265060240963856,
+ "accuracy_after": 0.6385542168674698,
+ "macro_f1_before": 0.6328042328042328,
+ "macro_f1_after": 0.6474934298606635,
+ "protocol": "thresholds chosen on one half of the subjects, reported on the other"
+}

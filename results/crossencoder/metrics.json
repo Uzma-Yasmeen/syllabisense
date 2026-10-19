@@ -1,0 +1,38 @@
+{
+ "base_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+ "parameters_millions": 22.7,
+ "threshold": 0.33,
+ "epochs": 2,
+ "batch_size": 16,
+ "learning_rate": 2e-05,
+ "max_length": 192,
+ "n_train": 9000,
+ "test": {
+  "accuracy": 0.8988539203201746,
+  "precision": 0.9271653543307087,
+  "recall": 0.7604951560818084,
+  "f1": 0.8356002365464222,
+  "roc_auc": 0.9361913500763615
+ },
+ "confusion_matrix": {
+  "tn": 3528,
+  "fp": 111,
+  "fn": 445,
+  "tp": 1413
+ },
+ "history": {
+  "loss": [
+   0.373782978621419,
+   0.18423047341360027
+  ],
+  "val_loss": [
+   0.38589512474413645,
+   0.3346747540015872
+  ],
+  "val_accuracy": [
+   0.8864516129032258,
+   0.8877419354838709
+  ]
+ },
+ "minutes": 65.8
+}

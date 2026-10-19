@@ -1,0 +1,14 @@
+# data lives outside the repo (5.5 GB of PDFs)
+models/crossencoder/
+syllabi/
+material/
+material_quarantine/
+cache/
+dataset/*.csv
+dataset/*.npz
+dataset/*.json
+!dataset/stats.json
+*.log
+models/crossencoder/
+__pycache__/
+.venv/

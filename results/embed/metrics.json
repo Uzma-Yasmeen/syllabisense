@@ -1,0 +1,63 @@
+{
+ "threshold": 0.6800000000000002,
+ "test": {
+  "accuracy": 0.9206840094597053,
+  "precision": 0.9303874092009685,
+  "recall": 0.8272335844994618,
+  "f1": 0.8757834757834758,
+  "roc_auc": 0.9447273304894855
+ },
+ "train_final": {
+  "accuracy": 0.978045642375946,
+  "loss": 0.08349049091339111
+ },
+ "val_final": {
+  "accuracy": 0.8838709592819214,
+  "loss": 0.2822108268737793
+ },
+ "epochs_run": 9,
+ "confusion_matrix": {
+  "tn": 3524,
+  "fp": 115,
+  "fn": 321,
+  "tp": 1537
+ },
+ "hyperparameters": {
+  "optimizer": "Adam",
+  "learning_rate": 0.001,
+  "loss": "binary_crossentropy",
+  "batch_size": 64,
+  "max_epochs": 40,
+  "dropout": [
+   0.3,
+   0.2
+  ],
+  "hidden_units": [
+   256,
+   64
+  ],
+  "input_dim": 1155,
+  "drop_sim_ablation": false
+ },
+ "per_domain": {
+  "CS": {
+   "n": 5497,
+   "accuracy": 0.9206840094597053,
+   "f1": 0.8757834757834758
+  }
+ },
+ "per_kind": {
+  "easy_negative": {
+   "n": 1781,
+   "accuracy": 0.9775407074677148
+  },
+  "hard_negative": {
+   "n": 1858,
+   "accuracy": 0.9596340150699677
+  },
+  "positive": {
+   "n": 1858,
+   "accuracy": 0.8272335844994618
+  }
+ }
+}

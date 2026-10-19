@@ -1,0 +1,32 @@
+{
+ "model": "results_tfidf",
+ "threshold_human_tuned": 0.5300000000000001,
+ "n_gold": 201,
+ "human_labels": {
+  "accuracy": 0.8308457711442786,
+  "precision": 0.734375,
+  "recall": 0.734375,
+  "f1": 0.734375,
+  "roc_auc": 0.807139598540146,
+  "confusion_matrix": {
+   "tn": 120,
+   "fp": 17,
+   "fn": 17,
+   "tp": 47
+  }
+ },
+ "weak_labels": {
+  "accuracy": 0.9154228855721394,
+  "precision": 0.890625,
+  "recall": 0.8507462686567164,
+  "f1": 0.8702290076335878,
+  "roc_auc": 0.9382936065938963,
+  "confusion_matrix": {
+   "tn": 127,
+   "fp": 7,
+   "fn": 10,
+   "tp": 57
+  }
+ },
+ "weak_vs_human_agreement": 0.845771144278607
+}

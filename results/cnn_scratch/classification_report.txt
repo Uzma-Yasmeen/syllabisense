@@ -1,0 +1,8 @@
+              precision    recall  f1-score   support
+
+  no diagram       0.77      0.95      0.85       116
+ has diagram       0.40      0.11      0.17        36
+
+    accuracy                           0.75       152
+   macro avg       0.59      0.53      0.51       152
+weighted avg       0.69      0.75      0.69       152

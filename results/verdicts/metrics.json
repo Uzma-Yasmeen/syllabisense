@@ -1,0 +1,49 @@
+{
+ "what": "accuracy of the per-topic verdict shown in the application",
+ "judged_by": "the rules in depth.py, which is what the application uses",
+ "n_topics": 150,
+ "accuracy": 0.56,
+ "accuracy_ci95": 0.07943845584266267,
+ "macro_f1": 0.5642772282651493,
+ "classes": [
+  "NOT",
+  "BARELY",
+  "PROPERLY"
+ ],
+ "confusion_matrix": {
+  "true_NOT": {
+   "pred_NOT": 26,
+   "pred_BARELY": 15,
+   "pred_PROPERLY": 16
+  },
+  "true_BARELY": {
+   "pred_NOT": 0,
+   "pred_BARELY": 26,
+   "pred_PROPERLY": 19
+  },
+  "true_PROPERLY": {
+   "pred_NOT": 0,
+   "pred_BARELY": 16,
+   "pred_PROPERLY": 32
+  }
+ },
+ "per_class": {
+  "NOT": {
+   "recall": 0.45614035087719296,
+   "n": 57
+  },
+  "BARELY": {
+   "recall": 0.5777777777777777,
+   "n": 45
+  },
+  "PROPERLY": {
+   "recall": 0.6666666666666666,
+   "n": 48
+  }
+ },
+ "trained_depth_model": {
+  "accuracy": 0.32666666666666666,
+  "macro_f1": 0.25441767068273097,
+  "note": "scored on ALL labelled topics including the ones it trained on, so this is optimistic; results_depth/metrics.json holds the held-out figure"
+ }
+}

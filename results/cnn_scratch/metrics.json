@@ -1,0 +1,48 @@
+{
+ "test": {
+  "accuracy": 0.75,
+  "precision": 0.4,
+  "recall": 0.1111111111111111,
+  "f1": 0.17391304347826086,
+  "roc_auc": 0.6376915708812261
+ },
+ "n_train": 424,
+ "n_test": 152,
+ "test_courses": [
+  "ocw__6-858-computer-systems-security-fall-2014",
+  "ocw__6-851-advanced-data-structures-spring-2012",
+  "ocw__10-34-numerical-methods-applied-to-chemical-engineering-fall-2005",
+  "ocw__5-069-crystal-structure-analysis-spring-2010",
+  "ocw__9-00sc-introduction-to-psychology-fall-2011",
+  "ocw__6-013-electromagnetics-and-applications-spring-2009",
+  "ocw__18-01-single-variable-calculus-fall-2006",
+  "ocw__6-005-elements-of-software-construction-fall-2008",
+  "ocw__6-033-computer-system-engineering-spring-2018",
+  "ocw__6-071j-introduction-to-electronics-signals-and-measurement-spring-2006",
+  "ocw__15-012-applied-macro-and-international-economics-spring-2011"
+ ],
+ "epochs_run": 10,
+ "confusion_matrix": {
+  "tn": 110,
+  "fp": 6,
+  "fn": 32,
+  "tp": 4
+ },
+ "hyperparameters": {
+  "image_size": 128,
+  "filters": [
+   32,
+   64,
+   128
+  ],
+  "kernel": "3x3",
+  "pool": "2x2",
+  "dense": 128,
+  "dropout": 0.5,
+  "optimizer": "Adam",
+  "learning_rate": 0.001,
+  "loss": "binary_crossentropy",
+  "batch_size": 32,
+  "max_epochs": 40
+ }
+}

@@ -1,0 +1,32 @@
+{
+ "model": "results_embed",
+ "threshold_human_tuned": 0.6500000000000001,
+ "n_gold": 201,
+ "human_labels": {
+  "accuracy": 0.8208955223880597,
+  "precision": 0.71875,
+  "recall": 0.71875,
+  "f1": 0.71875,
+  "roc_auc": 0.8114735401459854,
+  "confusion_matrix": {
+   "tn": 119,
+   "fp": 18,
+   "fn": 18,
+   "tp": 46
+  }
+ },
+ "weak_labels": {
+  "accuracy": 0.9054726368159204,
+  "precision": 0.875,
+  "recall": 0.835820895522388,
+  "f1": 0.8549618320610687,
+  "roc_auc": 0.9237023836043663,
+  "confusion_matrix": {
+   "tn": 126,
+   "fp": 8,
+   "fn": 11,
+   "tp": 56
+  }
+ },
+ "weak_vs_human_agreement": 0.845771144278607
+}

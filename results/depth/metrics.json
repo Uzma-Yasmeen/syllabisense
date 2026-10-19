@@ -1,0 +1,78 @@
+{
+ "test_accuracy": 0.39473684210526316,
+ "macro_f1": 0.39987654320987653,
+ "n_train": 112,
+ "n_test": 38,
+ "test_subjects": [
+  "Mathematics",
+  "Mechanical",
+  "Physics",
+  "Psychology",
+  "Artificial Intelligence",
+  "Data Structures",
+  "ChemEng",
+  "Humanities",
+  "Computer Networks",
+  "Natural Language Processing",
+  "Computer Organisation & Architecture",
+  "Discrete Mathematics",
+  "Biology",
+  "Theory of Computation",
+  "Software Engineering"
+ ],
+ "classes": [
+  "NOT",
+  "BARELY",
+  "PROPERLY"
+ ],
+ "confusion_matrix": [
+  [
+   7,
+   4,
+   4
+  ],
+  [
+   2,
+   4,
+   9
+  ],
+  [
+   0,
+   4,
+   4
+  ]
+ ],
+ "features": [
+  "best_page_chars",
+  "distinctive_words",
+  "frac_pages_above",
+  "has_definition",
+  "has_example",
+  "has_exercise",
+  "has_explanation",
+  "has_figure",
+  "has_formula",
+  "max_prob",
+  "mean_top3",
+  "mentions_best_page",
+  "n_evidence",
+  "n_files",
+  "prob_spread",
+  "topic_words"
+ ],
+ "epochs_run": 27,
+ "hyperparameters": {
+  "optimizer": "Adam",
+  "learning_rate": 0.001,
+  "batch_size": 16,
+  "loss": "sparse_categorical_crossentropy",
+  "hidden_units": [
+   64,
+   32
+  ],
+  "dropout": [
+   0.3,
+   0.2
+  ]
+ }
+}
