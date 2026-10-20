@@ -125,7 +125,7 @@ class Distractors:
 
 
 TRAILING_JUNK = re.compile(r"[\s,;:\-–(]+$")
-ENDS_BADLY = re.compile(r"(including|such as|e\.g|like|and|or|the|a|an|with|for|to|of|in)$", re.I)
+ENDS_BADLY = re.compile(r"\b(including|such as|e\.g|like|and|or|the|a|an|with|for|to|of|in)$", re.I)
 
 
 def tidy_clause(clause):
@@ -143,7 +143,7 @@ def tidy_clause(clause):
     c = TRAILING_JUNK.sub("", c)
     if not (32 <= len(c) <= 180) or len(c.split()) < 6:
         return None
-    if ENDS_BADLY.search(c) or re.search(r"\w+\s+\d+$", c):
+    if ENDS_BADLY.search(c) or re.search(r"\b\w+\s+\d+$", c):
         return None
     if sum(ch.isdigit() for ch in c) / len(c) > 0.12:
         return None
