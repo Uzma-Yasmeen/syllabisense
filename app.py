@@ -12,12 +12,14 @@ transparent rule in depth.py.
 """
 import json
 import os
+import random
 import tempfile
 
 import numpy as np
 import streamlit as st
 
 import diagrams
+import quiz as quizzer
 import report
 from evidence import load_evidence_model
 from analyze import TfidfFeaturiser, has_terms
@@ -295,6 +297,49 @@ if "results" in st.session_state:
                             f, loc, pr = r["closest"]
                             st.caption(f"closest page: {f} — {loc} "
                                        f"(scored {pr:.2f}, below the threshold)")
+
+    st.divider()
+    st.subheader("Quiz yourself")
+    st.caption("Questions are built only from the pages your material actually covers, so the "
+               "quiz never asks about a topic you have nothing on — the report above is what "
+               "tells you those. Every answer cites the page it came from.")
+
+    qcols = st.columns([1, 1, 2])
+    if qcols[0].button("Generate a quiz", use_container_width=True):
+        _, _, qfeat = load_model()
+        st.session_state["quiz"] = quizzer.build_quiz(
+            results, qfeat, n=10, seed=random.randrange(10_000))
+        st.session_state.pop("quiz_marked", None)
+    if st.session_state.get("quiz") and qcols[1].button("Clear", use_container_width=True):
+        st.session_state.pop("quiz", None)
+        st.session_state.pop("quiz_marked", None)
+
+    questions = st.session_state.get("quiz")
+    if questions is not None and not questions:
+        st.info("There is not enough covered material to build a quiz from. The models need at "
+                "least a couple of topics with real evidence behind them.")
+    elif questions:
+        with st.form("quiz_form"):
+            picks = [st.radio(f"**{i}. {q.stem}**", q.options, key=f"quiz_{i}", index=None)
+                     for i, q in enumerate(questions, 1)]
+            marked = st.form_submit_button("Check my answers", type="primary")
+        if marked:
+            st.session_state["quiz_marked"] = picks
+        picks = st.session_state.get("quiz_marked")
+        if picks:
+            right = sum(1 for q, p in zip(questions, picks) if p == q.correct)
+            st.markdown(f"### {right} out of {len(questions)}")
+            for i, (q, p) in enumerate(zip(questions, picks), 1):
+                ok = p == q.correct
+                with st.expander(f"{'✅' if ok else '❌'}  {i}. {q.topic[:70]}", expanded=not ok):
+                    if p is None:
+                        st.write("You left this one blank.")
+                    elif not ok:
+                        st.write(f"You chose: {p}")
+                    st.write(f"**Answer:** {q.correct}")
+                    if q.why:
+                        st.caption(q.why)
+                    st.caption(f"from {q.source[0]} — {q.source[1]}")
 
     st.divider()
     st.caption("Evidence model: ANN trained on 11,615 (topic, page) pairs from 12 non-computing "

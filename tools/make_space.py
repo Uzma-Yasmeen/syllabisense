@@ -20,7 +20,7 @@ import sys
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-APP = ["app.py", "analyze.py", "diagrams.py", "evidence.py", "report.py", "depth.py",
+APP = ["app.py", "analyze.py", "diagrams.py", "evidence.py", "quiz.py", "report.py", "depth.py",
        "loaders.py", "syllabus_topics.py", "units.py", "match.py"]
 MODELS = [("results_tfidf/evidence_ann.npz", "results_tfidf/evidence_ann.npz"),
           ("results_tfidf/metrics.json", "results_tfidf/metrics.json"),

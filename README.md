@@ -13,8 +13,21 @@ syllabus topics, reads every page of the material, and decides which pages are e
 topic. Topics with no evidence are reported as gaps — the thing a document chatbot cannot do,
 because it has no idea what the syllabus promised.
 
-Files named by unit (`Unit-2 notes.pdf`, `U3_slides.pptx`) are matched to that unit only, and a
-unit with no uploaded material is reported as *no material provided* rather than *not taught*.
+![Uploading a syllabus and two units of notes](docs/screenshots/01_upload.png)
+
+Each unit is judged only against its own material. The unit a file belongs to is taken from its
+name, from a unit stated inside it, or from which unit's topics it answers — and can be corrected
+in the app. A unit with no material is reported as *no material provided*, not as *not taught*.
+
+Below: a Software Engineering syllabus of 47 topics checked against the Unit 1 and Unit 2 notes
+only. Three units had nothing uploaded, and the system says so rather than calling them gaps.
+
+![47 topics: 8 properly taught, 5 barely, 2 not taught, 32 with no material](docs/screenshots/02_summary.png)
+
+Every verdict cites the page it came from, with the model's confidence. Where a diagram exists,
+the CNN says so.
+
+![A topic expanded, showing evidence pages and a diagram found on page 25](docs/screenshots/03_unit_detail.png)
 
 ## Run it
 
