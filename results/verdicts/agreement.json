@@ -1,0 +1,32 @@
+{
+ "n_topics": 94,
+ "raw_agreement": 0.8404255319148937,
+ "chance_agreement": 0.35853327297419646,
+ "cohens_kappa": 0.7512350035285816,
+ "interpretation": "substantial",
+ "confusion": {
+  "NOT": {
+   "NOT": 41,
+   "BARELY": 1,
+   "PROPERLY": 0
+  },
+  "BARELY": {
+   "NOT": 3,
+   "BARELY": 18,
+   "PROPERLY": 2
+  },
+  "PROPERLY": {
+   "NOT": 2,
+   "BARELY": 7,
+   "PROPERLY": 20
+  }
+ },
+ "system_accuracy": {
+  "against_first": 0.5531914893617021,
+  "against_second": 0.5319148936170213,
+  "difference": 0.021276595744680882,
+  "where_readers_agreed": 0.5569620253164557,
+  "n_scored": 94,
+  "n_agreed": 79
+ }
+}

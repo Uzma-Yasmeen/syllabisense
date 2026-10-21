@@ -19,10 +19,10 @@ RUN = ["app.py", "analyze.py", "demo.py", "test_syllabisense.py"]
 LIB = ["loaders.py", "syllabus_topics.py", "units.py", "depth.py", "match.py", "diagrams.py",
        "report.py", "evidence.py", "quiz.py"]
 TRAIN = ["build_dataset.py", "features_tfidf.py", "embed_features.py", "train_ann.py",
-         "train_crossencoder.py", "evaluate_gold.py", "evaluate_gold_ce.py", "score_verdicts.py", "export_ann.py", "tune_depth_rules.py",
+         "train_crossencoder.py", "evaluate_gold.py", "evaluate_gold_ce.py", "score_verdicts.py", "score_agreement.py", "export_ann.py", "tune_depth_rules.py",
          "render_pages.py", "train_cnn.py", "train_cnn_scratch.py", "compare_fusion.py"]
 LABEL = ["review_tool.py", "build_depth_candidates.py", "depth_review.py", "train_depth.py",
-         "image_review.py"]
+         "image_review.py", "agreement_review.py"]
 TOOLS = ["collect_nptel.py", "collect_ocw.py", "extract_text.py", "inventory.py",
          "select_pairs.py", "select_cs.py", "finalize_pairs.py", "write_final.py",
          "spot_check.py", "generic_topics.py", "test_page_types.py", "build_repo.py",
@@ -79,6 +79,7 @@ means holding both documents at once and judging every pairing between them.
 | Is this page evidence for this topic? | **83.1%** | — |
 | Does my material cover this topic at all? | **79.3%** | 62% |
 | Properly / barely / not taught? | 56.0% ±7.9 | 38% |
+| ...on topics two readers independently agreed about | 55.7% | 38% |
 
 Measured against **450 items labelled by hand**, not against the automatic labels the models
 trained on — those are only 84.6% correct, and scoring against them inflates the first row to
@@ -104,6 +105,13 @@ both sides and measure memorisation.
 that hides the automatic label. They proved 84.6% correct, so every headline number is reported
 against the human labels too.
 
+**A second reader checked the labels.** 94 of the hand-labelled topics were labelled again by
+someone else, shown the same evidence with the first answer hidden. They agree 84.0% of the time
+against 35.9% expected by chance — Cohen's kappa **0.751**, which is "substantial". More to the
+point, the system's measured accuracy barely moves depending on whose labels it is scored
+against: 55.3% against the first reader, 53.2% against the second. The headline number describes
+the system rather than the person who labelled it.
+
 **Negative results are kept.** A fine-tuned transformer was trained as a comparison and lost
 (80.1% against 83.1%), so it is not deployed. A 3-class depth model scores at chance (39.5% on 38
 held-out topics, against a 38% baseline), so the application uses transparent rules instead. A
@@ -121,8 +129,10 @@ reaches comparable accuracy reading raw text, with no hand-crafted features at a
   explanation still counts as evidence.
 - **Accuracy varies by subject** far more than any change made to the rules: the same rules score
   48% on one half of the subjects and 63% on the other. A single number hides that.
-- **One annotator.** All 450 labels came from one person, so no inter-annotator agreement can be
-  reported.
+- **Two annotators, not a panel.** 94 topics were double-labelled (kappa 0.751), but the other
+  356 labels rest on one reader. Where the two disagree it runs one way — the second reader is
+  stricter, moving 7 topics from *properly* down to *barely* against 2 in the other direction —
+  so the boundary between those two classes is softer than a single number suggests.
 - **One held-out subject area.** Generalisation rests on a single sample, not cross-validation.
 - **Tuning the rules did not help.** A grid search over the thresholds gained 1.2 points on
   held-out subjects — 0.55 standard errors, indistinguishable from chance. The ceiling is the
